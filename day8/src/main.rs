@@ -205,33 +205,180 @@ decfb bc gfedc fcagbd bgec ecgdabf degfcb ebafd afcdeg bcd | aefbd fdceg dcb efg
     let mut sum = 0;
 
     for line in lines {
-        let mut splitted = line.split('|');
-
-        let first_part = splitted.next();
-        let second_part = splitted.next();
-
-        match first_part {
-            Some(first_part) => {
-                // read 10 patterns in first part
-
-                match second_part {
-                    Some(second_part) => {
-                        // read 4 digits in second part
-
-                        // detect 10 digits to the according patterns
-
-                        // get the number from 4 digits
-                        let number = 0;
-
-                        // add to the sum
-                        sum += number;
-                    },
-                    None => {}
-                }
-            },
-            None => {}
-        }
+        sum += get_digit_from_line(line);
     }
 
     println!("{}", sum);
+}
+
+fn get_digit_from_line(line: &str) -> i32 {
+    let mut splitted = line.split('|');
+
+    let first_part = splitted.next();
+    let second_part = splitted.next();
+
+    match first_part {
+        Some(first_part) => {
+            // read 10 patterns in first part
+            let patterns = read_patterns(first_part);
+
+            match second_part {
+                Some(second_part) => {
+                    // read 4 digits in second part
+                    let digits = read_digits(second_part);
+
+                    // get the number from the 4 digits
+                    get_digit_value(patterns, digits[0]) * 1000 +
+                        get_digit_value(patterns, digits[1]) * 100 +
+                            get_digit_value(patterns, digits[2]) * 10 +
+                                get_digit_value(patterns, digits[3])
+                },
+                None => {
+                    0
+                }
+            }
+        },
+        None => {
+            0
+        }
+    }
+}
+
+fn read_patterns(first_part: &str) -> [&str; 10] {
+    let vector: Vec<&str> = first_part.split_whitespace().collect();
+
+    let slice = vector.as_slice();
+
+    let array: [&str; 10] = match slice.try_into() {
+        Ok(ba) => ba,
+        Err(_) => panic!("Expected a Vec of length {} but it was {}", 10, vector.len()),
+    };
+
+    array
+}
+
+fn read_digits(second_part: &str) -> [&str; 4] {
+    let vector: Vec<&str> = second_part.split_whitespace().collect();
+
+    let slice = vector.as_slice();
+
+    let array: [&str; 4] = match slice.try_into() {
+        Ok(ba) => ba,
+        Err(_) => panic!("Expected a Vec of length {} but it was {}", 4, vector.len()),
+    };
+
+    array
+}
+
+fn get_digit_value(patterns: [&str; 10], digit: &str) -> i32 {
+    let digit_len = digit.len();
+
+    match digit_len {
+        2 => 1,
+        3 => 7,
+        4 => 4,
+        5 => { // either 2, 3 or 5
+            if has_all_digits_of_one(patterns, digit) { // if all digits of "1" => 3
+                return 3;
+            }
+
+            if has_only_2_digits_of_four(patterns, digit) { // if only 2 digits of "4" => 2
+                return 2;
+            }
+
+            return 5;
+        },
+        6 => { // either 0, 6 or 9
+            if has_only_1_digit_of_one(patterns, digit) { // if only one digits of "1" => 6
+                return 6;
+            }
+
+            if has_all_digits_of_four(patterns, digit) { // if all digits of "4" => 9
+                return 9;
+            }
+
+            return 0;
+        },
+        7 => 8,
+        _ => 0
+    }
+}
+
+fn has_only_1_digit_of_one(patterns: [&str; 10], digit: &str) -> bool {
+    let one_pattern = get_1_pattern(patterns);
+
+    let mut count = 0;
+
+    for d in one_pattern.chars() {
+        if digit.contains(d) {
+            count += 1;
+        }
+    }
+
+    return count == 1;
+}
+
+fn has_all_digits_of_four(patterns: [&str; 10], digit: &str) -> bool {
+    let four_pattern = get_4_pattern(patterns);
+
+    for d in four_pattern.chars() {
+        if !digit.contains(d) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+fn has_only_2_digits_of_four(patterns: [&str; 10], digit: &str) -> bool {
+    let four_pattern = get_4_pattern(patterns);
+
+    let mut count = 0;
+
+    for d in four_pattern.chars() {
+        if digit.contains(d) {
+            count += 1;
+        }
+    }
+
+    return count == 2;
+}
+
+fn has_all_digits_of_one(patterns: [&str; 10], digit: &str) -> bool {
+    let one_pattern = get_1_pattern(patterns);
+
+    for d in one_pattern.chars() {
+        if !digit.contains(d) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+fn get_1_pattern(patterns: [&str; 10]) -> &str {
+    let mut index = 0;
+
+    loop {
+        let pattern = patterns[index];
+
+        if pattern.len() == 2 {
+            return pattern;
+        }
+
+        index += 1
+    }
+}
+fn get_4_pattern(patterns: [&str; 10]) -> &str {
+    let mut index = 0;
+
+    loop {
+        let pattern = patterns[index];
+
+        if pattern.len() == 4 {
+            return pattern;
+        }
+
+        index += 1
+    }
 }
