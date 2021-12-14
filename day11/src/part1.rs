@@ -12,6 +12,7 @@ impl PartialEq for Octopus {
 }
 
 struct StepOutput {
+    number_of_flashes: i32,
     octopuses: Vec<Octopus>,
 }
 
@@ -52,17 +53,18 @@ fn main() {
         y += 1;
     }
 
-    let mut step = 0;
+    let number_of_steps = 100;
+    let mut number_of_flashes = 0;
 
-    while has_all_flashed(octopuses.clone()) == false {
+    for _ in 0..number_of_steps {
         let output = execute_step(octopuses);
 
-        step += 1;
+        number_of_flashes += output.number_of_flashes;
         octopuses = output.octopuses;
     }
 
     print_octopuses(octopuses);
-    println!("Number of steps: {}", step);
+    println!("Number of flashes: {}", number_of_flashes);
 }
 
 fn print_octopuses(octopuses: Vec<Octopus>) {
@@ -81,10 +83,6 @@ fn print_octopuses(octopuses: Vec<Octopus>) {
 
         println!();
     }
-}
-
-fn has_all_flashed(octopuses: Vec<Octopus>) -> bool {
-    octopuses.iter().all(|o| o.energy == 0)
 }
 
 fn execute_step(o: Vec<Octopus>) -> StepOutput {
@@ -129,6 +127,8 @@ fn execute_step(o: Vec<Octopus>) -> StepOutput {
         }
     }
 
+    let number_of_flashes = octopuses.iter().filter(|o| o.energy == -1).count() as i32;
+
     // reset octopuses who have flashed
     for octopus in &mut octopuses {
         if octopus.energy == -1 {
@@ -136,5 +136,5 @@ fn execute_step(o: Vec<Octopus>) -> StepOutput {
         }
     }
 
-    return StepOutput { octopuses };
+    return StepOutput { number_of_flashes, octopuses };
 }
