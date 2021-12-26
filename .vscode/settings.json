@@ -1,3 +1,5 @@
 {
-  "editor.defaultFormatter": "rust-lang.rust"
+  "[rust]": {
+    "editor.defaultFormatter": "matklad.rust-analyzer"
+  }
 }
